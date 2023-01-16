@@ -22,7 +22,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         console.log("Connected correctly to server");
-        const db = client.db("result-rise-db");
+        const db = client.db("result-rise");
         const studentsCollection = db.collection("students");
         const teachersCollection = db.collection("teachers");
 
@@ -33,7 +33,11 @@ async function run() {
 
         // get all students
         app.get("/students", async (req, res) => {
-            const students = await studentsCollection.find().toArray();
+            const sort = { _id: -1 };
+            const students = await studentsCollection
+                .find()
+                .sort(sort)
+                .toArray();
             res.send(students);
         });
 
@@ -47,7 +51,11 @@ async function run() {
 
         // add a student
         app.post("/students", async (req, res) => {
-            const student = req.body;
+            const student_name = req.body.student_name;
+            const student_id = req.body.student_id;
+            const cgpa = req.body.cgpa;
+            const photo = req.body.photo;
+            const student = { student_name, student_id, cgpa, photo };
             const result = await studentsCollection.insertOne(student);
             res.send(result);
         });
@@ -57,7 +65,12 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const newData = { $set: req.body };
-            const result = await studentsCollection.updateOne(query, newData);
+            const options = { upsert: true };
+            const result = await studentsCollection.updateOne(
+                query,
+                newData,
+                options
+            );
             res.send(result);
         });
 
@@ -71,7 +84,11 @@ async function run() {
 
         // get all teachers
         app.get("/teachers", async (req, res) => {
-            const teachers = await teachersCollection.find().toArray();
+            const sort = { _id: -1 };
+            const teachers = await teachersCollection
+                .find()
+                .sort(sort)
+                .toArray();
             res.send(teachers);
         });
 
@@ -85,7 +102,11 @@ async function run() {
 
         // add a teacher
         app.post("/teachers", async (req, res) => {
-            const teacher = req.body;
+            const teacher_name = req.body.teacher_name;
+            const teacher_id = req.body.teacher_id;
+            const designation = req.body.designation;
+            const photo = req.body.photo;
+            const teacher = { teacher_name, teacher_id, photo, designation };
             const result = await teachersCollection.insertOne(teacher);
             res.send(result);
         });
