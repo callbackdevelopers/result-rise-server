@@ -7,7 +7,6 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@result-rise-db.g6bidmr.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri);
 
 // middleware
 app.use(cors());
