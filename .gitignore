@@ -1,3 +1,4 @@
 .yarn
 .env
 .vercel
+.pnp.cjs
