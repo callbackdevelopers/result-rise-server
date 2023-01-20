@@ -31,19 +31,29 @@ mongodb()
 const db = client.db("result-rise");
 const studentsCollection = db.collection("students");
 const teachersCollection = db.collection("teachers");
+const usersCollection = db.collection("user");
 
-//sign up with role
-// app.post("/signup", async (req, res) => {
+//get all users
+app.get("/users", async (req, res) => {
+    const sort = { _id: -1 };
+    const query = {};
+    const users = await usersCollection.find(query).sort(sort).toArray();
+    res.send(users);
+});
 
-// });
+// post a user
+app.post("/users", async (req, res) => {
+    const user = req.body
+    // console.log(user);
+    const result = await usersCollection.insertOne(user);
+    res.send(result);
+});
+
 
 // get all students
 app.get("/students", async (req, res) => {
     const sort = { _id: -1 };
-    const students = await studentsCollection
-        .find()
-        .sort(sort)
-        .toArray();
+    const students = await studentsCollection.find().sort(sort).toArray();
     res.send(students);
 });
 
