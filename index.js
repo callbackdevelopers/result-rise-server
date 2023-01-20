@@ -31,7 +31,7 @@ mongodb()
 const db = client.db("result-rise");
 const studentsCollection = db.collection("students");
 const teachersCollection = db.collection("teachers");
-const usersCollection = db.collection("user");
+const usersCollection = db.collection("users");
 
 //get all users
 app.get("/users", async (req, res) => {
@@ -39,6 +39,14 @@ app.get("/users", async (req, res) => {
     const query = {};
     const users = await usersCollection.find(query).sort(sort).toArray();
     res.send(users);
+});
+//get a user 
+app.get("/users/:email", async (req, res) => {
+    const { email } = req.params;
+    console.log(email);
+    const query = { email: email };
+    const user = await usersCollection.findOne(query)
+    res.send(user);
 });
 
 // post a user
