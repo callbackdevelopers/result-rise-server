@@ -6,7 +6,7 @@ const port = process.env.PORT || 3100;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@result-rise-db.g6bidmr.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://result-rise-db-user:8atFxiIp8yCahDc6@result-rise-db.g6bidmr.mongodb.net/?retryWrites=true&w=majority`;
 // console.log(uri);
 
 // middleware
@@ -32,6 +32,7 @@ const db = client.db("result-rise");
 const studentsCollection = db.collection("students");
 const teachersCollection = db.collection("teachers");
 const usersCollection = db.collection("users");
+const studentResult =db.collection("studentResultData")
 
 //get all users
 app.get("/users", async (req, res) => {
@@ -152,7 +153,14 @@ app.delete("/teachers/:id", async (req, res) => {
     res.send(result);
 });
 
-
+//get student result data
+app.get("/resultdata", async (req, res) => {
+     const query = {};
+    const resultData = await studentResult.find(query);
+    const result = await resultData.toArray()
+    console.log(result);
+    res.send(result);
+});
 
 app.get("/", (req, res) => {
     res.send("ResultRise Server is running");
