@@ -40,14 +40,16 @@ app.get("/users", async (req, res) => {
     const users = await usersCollection.find(query).sort(sort).toArray();
     res.send(users);
 });
-//get a user 
+//get a user by email
 app.get("/users/:email", async (req, res) => {
     const { email } = req.params;
     console.log(email);
-    const query = { email: email };
+    const query = { email };
     const user = await usersCollection.findOne(query)
     res.send(user);
 });
+
+
 
 // post a user
 app.post("/users", async (req, res) => {
