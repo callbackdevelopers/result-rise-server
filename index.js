@@ -12,6 +12,7 @@ console.log(uri);
 // middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.json());
 
 const client = new MongoClient(uri, {
     useNewUrlParser: true,
