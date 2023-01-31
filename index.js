@@ -89,6 +89,24 @@ app.put("/users/:id", async (req, res) => {
     // console.log("UP:", updatedUser)
 });
 
+// Verification student and teacher
+app.patch("/users/:id", async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: ObjectId(id) };
+
+    // const user = req.body;
+    const options = { upsert: true };
+    const updatedUser = {
+        $set: {
+            verification: true,
+        }
+    }
+    // console.log("UP:", updatedUser)
+    const result = await usersCollection.updateOne(filter, updatedUser, options);
+    res.send(result)
+    // console.log("UP:", updatedUser)
+});
+
 // delete a student
 app.delete("/users/:id", async (req, res) => {
     const id = req.params.id;
