@@ -29,8 +29,6 @@ const mongodb = () => {
 mongodb()
 //collections
 const db = client.db("result-rise");
-const studentsCollection = db.collection("students");
-const teachersCollection = db.collection("teachers");
 const usersCollection = db.collection("users");
 const studentResult = db.collection("studentResultData")
 
@@ -44,7 +42,7 @@ app.get("/users", async (req, res) => {
 //get a user 
 app.get("/users/:email", async (req, res) => {
     const { email } = req.params;
-    console.log(email);
+    // console.log(email);
     const query = { email: email };
     const user = await usersCollection.findOne(query)
     res.send(user);
@@ -57,6 +55,14 @@ app.post("/users", async (req, res) => {
     const result = await usersCollection.insertOne(user);
     res.send(result);
 });
+
+// get all student :
+app.get('/students', async (req, res) => {
+    const sort = { _id: -1 };
+    const query = { roll: "student" };
+    const students = await usersCollection.find(query).sort(sort).toArray();
+    res.send(students);
+})
 
 
 app.get("/", (req, res) => {
