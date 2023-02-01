@@ -12,7 +12,6 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@result-
 // middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.json());
 
 const client = new MongoClient(uri, {
     useNewUrlParser: true,
@@ -33,6 +32,7 @@ const db = client.db("result-rise");
 const studentsCollection = db.collection("students");
 const teachersCollection = db.collection("teachers");
 const usersCollection = db.collection("users");
+const studentsReportCollection = db.collection("studentsReport");
 
 //get all users
 app.get("/users", async (req, res) => {
@@ -50,6 +50,37 @@ app.get("/users/:email", async (req, res) => {
     res.send(user);
 });
 
+// student report posted 
+app.post("/report", async (req, res) => {
+    const report = req.body;
+    const result = await studentsReportCollection.insertOne(report);
+    res.send(result);
+});
+
+// get all student reports
+app.get("/reports", async (req, res) => {
+    const query = {};
+    const reports = await studentsReportCollection.find(query).toArray();
+    res.send(reports);
+
+});
+
+// get according to roll
+app.get("/user", async (req, res) => {
+    const roll = req.query.roll;
+    const query = { roll: roll };
+    const result = await usersCollection.find(query).toArray();
+    res.send(result);
+});
+
+// user a delete 
+app.delete("/user/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = await usersCollection.deleteOne(query);
+    res.send(result);
+})
+
 
 
 // post a user
@@ -59,6 +90,7 @@ app.post("/users", async (req, res) => {
     const result = await usersCollection.insertOne(user);
     res.send(result);
 });
+
 
 
 // get all students
