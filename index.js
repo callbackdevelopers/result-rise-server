@@ -58,8 +58,6 @@ app.get("/users/:id", async (req, res) => {
     res.send(user);
 });
 
-
-
 // post a user
 app.post("/users", async (req, res) => {
     const user = req.body
@@ -113,7 +111,13 @@ app.delete("/users/:id", async (req, res) => {
     const result = await usersCollection.deleteOne(query);
     res.send(result);
 });
-
+// get a student result
+app.get("/studentResult/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) }
+    const result = await studentResult.find(query).toArray();
+    res.send(result);
+});
 
 app.get("/", (req, res) => {
     res.send("ResultRise Server is running");
