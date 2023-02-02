@@ -68,9 +68,9 @@ app.get("/students", async (req, res) => {
 //get a student
 app.get("/students/:id", async (req, res) => {
   const id = req.params.id;
-  console.log('student id', id);
+  console.log("student id", id);
   const query = { _id: ObjectId(id) };
-  console.log('student query', query);
+  console.log("student query", query);
   const student = await studentsCollection.findOne(query);
   res.send(student);
 });
@@ -114,9 +114,9 @@ app.get("/teachers", async (req, res) => {
 //get a teacher
 app.get("/teachers/:id", async (req, res) => {
   const id = req.params.id;
-  console.log('teachers id', id);
+  console.log("teachers id", id);
   const query = { _id: ObjectId(id) };
-  console.log('teachers query', query);
+  console.log("teachers query", query);
   const teacher = await teachersCollection.findOne(query);
   res.send(teacher);
 });
@@ -150,7 +150,6 @@ app.delete("/teachers/:id", async (req, res) => {
   res.send(result);
 });
 
-
 //get All student result data
 app.get("/resultdata", async (req, res) => {
   const query = {};
@@ -160,25 +159,20 @@ app.get("/resultdata", async (req, res) => {
   res.send(result);
 });
 
-
-// get single student data 
-app.get('/resultdata/:id', async(req, res)=>{
-       const email = req.query.email;
-       const id =req.params.id;
-       const query = {student_email: email}
-       const student = await studentResult.findOne(query)
-       if(student){
-         const semesterResult = student?.semester_results?.find(st=>st.semesterId == id)
-         console.log('studentresult data ',semesterResult);
-         res.send(semesterResult)
-       }
-     
-})
-
-
-
-
-
+// get single student data
+app.get("/resultdata/:id", async (req, res) => {
+  const email = req.query.email;
+  const id = req.params.id;
+  const query = { student_email: email };
+  const student = await studentResult.findOne(query);
+  if (student) {
+    const semesterResult = student?.semester_results?.find(
+      (st) => st.semesterId == id
+    );
+    console.log("studentresult data ", semesterResult);
+    res.send(semesterResult);
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("ResultRise Server is running");
