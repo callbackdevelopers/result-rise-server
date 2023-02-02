@@ -29,10 +29,9 @@ const mongodb = () => {
 mongodb();
 //collections
 const db = client.db("result-rise");
-const studentsCollection = db.collection("students");
-const teachersCollection = db.collection("teachers");
 const usersCollection = db.collection("users");
-const studentResult = db.collection("studentResultData");
+const studentResult = db.collection("studentResultData")
+const studentsReportCollection = db.collection("studentsReport")
 
 //get all users
 app.get("/users", async (req, res) => {
@@ -41,122 +40,131 @@ app.get("/users", async (req, res) => {
   const users = await usersCollection.find(query).sort(sort).toArray();
   res.send(users);
 });
-//get a user
+
+//get a user by email
 app.get("/users/:email", async (req, res) => {
-  const { email } = req.params;
-  console.log(email);
-  const query = { email: email };
-  const user = await usersCollection.findOne(query);
-  res.send(user);
+    const { email } = req.params;
+    console.log("uE", email);
+    const query = { email };
+    const user = await usersCollection.findOne(query)
+    res.send(user);
 });
+
+//get a user by id
+app.get("/users/:id", async (req, res) => {
+    const { id } = req.params;
+    console.log("userBYID", id);
+    const query = { _id: ObjectId(id) };
+    const user = await usersCollection.findOne(query)
+    res.send(user);
+});
+
+// student report posted 
+app.post("/report", async (req, res) => {
+    const report = req.body;
+    const result = await studentsReportCollection.insertOne(report);
+    res.send(result);
+});
+
+// get all student reports
+app.get("/reports", async (req, res) => {
+    const query = {};
+    const reports = await studentsReportCollection.find(query).toArray();
+    res.send(reports);
+
+});
+
+app.put("/resolved/:id", async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: ObjectId(id) };
+    const options = { upsert: true };
+    const updatedDoc = {
+        $set: {
+            resolved: "student"
+        }
+    }
+    const result = await studentsReportCollection.updateOne(filter, updatedDoc, options);
+    res.send(result);
+});
+
+// get according to roll
+app.get("/user", async (req, res) => {
+    const roll = req.query.roll;
+    const query = { roll: roll };
+    const result = await usersCollection.find(query).toArray();
+    res.send(result);
+});
+
+// user a delete 
+app.delete("/user/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = await usersCollection.deleteOne(query);
+    res.send(result);
+})
+
+
 
 // post a user
 app.post("/users", async (req, res) => {
-  const user = req.body;
-  // console.log(user);
-  const result = await usersCollection.insertOne(user);
-  res.send(result);
+    const user = req.body
+    // console.log(user);
+    const result = await usersCollection.insertOne(user);
+    res.send(result);
 });
 
-// get all students
-app.get("/students", async (req, res) => {
-  const sort = { _id: -1 };
-  const students = await studentsCollection.find().sort(sort).toArray();
-  res.send(students);
+
+// update user
+app.put("/users/:id", async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: ObjectId(id) };
+
+    const user = req.body;
+    const options = { upsert: true };
+    const updatedUser = {
+        $set: {
+            name: user.name,
+            phone: user.phone,
+            address: user.address
+        }
+    }
+    // console.log("UP:", updatedUser)
+    const result = await usersCollection.updateOne(filter, updatedUser, options);
+    res.send(result)
+    // console.log("UP:", updatedUser)
 });
 
-//get a student
-app.get("/students/:id", async (req, res) => {
-  const id = req.params.id;
-  console.log("student id", id);
-  const query = { _id: ObjectId(id) };
-  console.log("student query", query);
-  const student = await studentsCollection.findOne(query);
-  res.send(student);
-});
+// Verification student and teacher
+app.patch("/users/:id", async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: ObjectId(id) };
 
-// add a student
-app.post("/students", async (req, res) => {
-  const student_name = req.body.student_name;
-  const student_id = req.body.student_id;
-  const cgpa = req.body.cgpa;
-  const photo = req.body.photo;
-  const student = { student_name, student_id, cgpa, photo };
-  const result = await studentsCollection.insertOne(student);
-  res.send(result);
-});
-
-// update a student
-app.patch("/students/:id", async (req, res) => {
-  const id = req.params.id;
-  const query = { _id: ObjectId(id) };
-  const newData = { $set: req.body };
-  const options = { upsert: true };
-  const result = await studentsCollection.updateOne(query, newData, options);
-  res.send(result);
+    // const user = req.body;
+    const options = { upsert: true };
+    const updatedUser = {
+        $set: {
+            verification: true,
+        }
+    }
+    // console.log("UP:", updatedUser)
+    const result = await usersCollection.updateOne(filter, updatedUser, options);
+    res.send(result)
+    // console.log("UP:", updatedUser)
 });
 
 // delete a student
-app.delete("/students/:id", async (req, res) => {
-  const id = req.params.id;
-  const query = { _id: ObjectId(id) };
-  const result = await studentsCollection.deleteOne(query);
-  res.send(result);
+app.delete("/users/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = await usersCollection.deleteOne(query);
+    res.send(result);
 });
-
-// get all teachers
-app.get("/teachers", async (req, res) => {
-  const sort = { _id: -1 };
-  const teachers = await teachersCollection.find().sort(sort).toArray();
-  res.send(teachers);
-});
-
-//get a teacher
-app.get("/teachers/:id", async (req, res) => {
-  const id = req.params.id;
-  console.log("teachers id", id);
-  const query = { _id: ObjectId(id) };
-  console.log("teachers query", query);
-  const teacher = await teachersCollection.findOne(query);
-  res.send(teacher);
-});
-
-// add a teacher
-app.post("/teachers", async (req, res) => {
-  const teacher_name = req.body.teacher_name;
-  const teacher_id = req.body.teacher_id;
-  const designation = req.body.designation;
-  const photo = req.body.photo;
-  const teacher = { teacher_name, teacher_id, photo, designation };
-  const result = await teachersCollection.insertOne(teacher);
-  res.send(result);
-});
-
-// update a teacher
-app.patch("/teachers/:id", async (req, res) => {
-  const id = req.params.id;
-  const query = { _id: ObjectId(id) };
-  const newData = { $set: req.body };
-  const result = await teachersCollection.updateOne(query, newData);
-  res.send(result);
-});
-
-//delete a teacher
-app.delete("/teachers/:id", async (req, res) => {
-  const id = req.params.id;
-  console.log(id);
-  const query = { _id: ObjectId(id) };
-  const result = await teachersCollection.deleteOne(query);
-  res.send(result);
-});
-
-//get All student result data
-app.get("/resultdata", async (req, res) => {
-  const query = {};
-  const resultData = await studentResult.find(query);
-  const result = await resultData.toArray();
-
-  res.send(result);
+// get a student result
+app.get("/studentResult/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) }
+    const result = await studentResult.find(query).toArray();
+    res.send(result);
 });
 
 // get single student data
