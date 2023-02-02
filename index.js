@@ -31,6 +31,7 @@ mongodb()
 const db = client.db("result-rise");
 const usersCollection = db.collection("users");
 const studentResult = db.collection("studentResultData")
+const studentsReportCollection = db.collection("studentsReport")
 
 //get all users
 app.get("/users", async (req, res) => {
@@ -58,6 +59,52 @@ app.get("/users/:id", async (req, res) => {
     res.send(user);
 });
 
+// student report posted 
+app.post("/report", async (req, res) => {
+    const report = req.body;
+    const result = await studentsReportCollection.insertOne(report);
+    res.send(result);
+});
+
+// get all student reports
+app.get("/reports", async (req, res) => {
+    const query = {};
+    const reports = await studentsReportCollection.find(query).toArray();
+    res.send(reports);
+
+});
+
+app.put("/resolved/:id", async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: ObjectId(id) };
+    const options = { upsert: true };
+    const updatedDoc = {
+        $set: {
+            resolved: "student"
+        }
+    }
+    const result = await studentsReportCollection.updateOne(filter, updatedDoc, options);
+    res.send(result);
+});
+
+// get according to roll
+app.get("/user", async (req, res) => {
+    const roll = req.query.roll;
+    const query = { roll: roll };
+    const result = await usersCollection.find(query).toArray();
+    res.send(result);
+});
+
+// user a delete 
+app.delete("/user/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = await usersCollection.deleteOne(query);
+    res.send(result);
+})
+
+
+
 // post a user
 app.post("/users", async (req, res) => {
     const user = req.body
@@ -65,6 +112,7 @@ app.post("/users", async (req, res) => {
     const result = await usersCollection.insertOne(user);
     res.send(result);
 });
+
 
 // update user
 app.put("/users/:id", async (req, res) => {
