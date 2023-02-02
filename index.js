@@ -44,7 +44,6 @@ app.get("/users", async (req, res) => {
 //get a user by email
 app.get("/users/:email", async (req, res) => {
     const { email } = req.params;
-    console.log("uE", email);
     const query = { email };
     const user = await usersCollection.findOne(query)
     res.send(user);
@@ -167,9 +166,17 @@ app.get("/studentResult/:id", async (req, res) => {
     res.send(result);
 });
 
+app.get("/resultdata", async (req, res) => {
+  const query = {};
+ const resultData = await studentResult.find(query);
+ const result = await resultData.toArray()
+ console.log(result);
+ res.send(result);
+});
 // get single student data
 app.get("/resultdata/:id", async (req, res) => {
   const email = req.query.email;
+   console.log('result data email', email);
   const id = req.params.id;
   const query = { student_email: email };
   const student = await studentResult.findOne(query);
