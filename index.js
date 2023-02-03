@@ -166,6 +166,29 @@ app.get("/studentResult/:id", async (req, res) => {
     const result = await studentResult.find(query).toArray();
     res.send(result);
 });
+//result data
+app.get("/resultdata", async (req, res) => {
+    const query = {};
+    const resultData = await studentResult.find(query);
+    const result = await resultData.toArray()
+    // console.log(result);
+    res.send(result);
+});
+
+app.get("/resultdata/:id", async (req, res) => {
+    const email = req.query.email;
+    console.log('result data email', email);
+    const id = req.params.id;
+    const query = { student_email: email };
+    const student = await studentResult.findOne(query);
+    if (student) {
+        const semesterResult = student?.semester_results?.find(
+            (st) => st.semesterId == id
+        );
+        console.log("studentresult data ", semesterResult);
+        res.send(semesterResult);
+    }
+});
 
 app.get("/", (req, res) => {
     res.send("ResultRise Server is running");
