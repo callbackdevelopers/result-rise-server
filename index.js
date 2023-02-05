@@ -40,24 +40,67 @@ app.get("/users", async (req, res) => {
     const users = await usersCollection.find(query).sort(sort).toArray();
     res.send(users);
 });
-
+//starting upgrading : Shakeeb
 //get a user by email
 app.get("/users/:email", async (req, res) => {
     const { email } = req.params;
-    console.log("uE", email);
-    const query = { email };
-    const user = await usersCollection.findOne(query)
-    res.send(user);
+    const query = { email: email };
+    try {
+        const user = await usersCollection.find(query).toArray()
+        res.send(user);
+    } catch (error) { res.send(error.message); }
 });
 
-//get a user by id
+//get a user by id 
 app.get("/users/:id", async (req, res) => {
     const { id } = req.params;
-    console.log("userBYID", id);
     const query = { _id: ObjectId(id) };
     const user = await usersCollection.findOne(query)
     res.send(user);
 });
+
+//get all pending  form user : Shakeeb
+app.get("/pending/:roll", async (req, res) => {
+    const { roll } = req.params;
+    const query = { verification: false };
+    const users = await usersCollection.find(query).toArray();
+    try {
+        if (roll === "student") {
+            const students = users.filter(user => user.roll === "student");
+            console.log("student", students);
+            res.send(students);
+            return;
+        }
+        else if (roll === "teacher") {
+            const teacher = users.filter(user => user.roll === "teacher");
+            res.send(teacher);
+            return;
+        }
+        else { res.send("user not found"); }
+    } catch (error) { res.send(error.message); }
+});
+
+// get all verified user : Shakeeb
+app.get("/verified/:roll", async (req, res) => {
+    const { roll } = req.params;
+    const query = { verification: true };
+    const users = await usersCollection.find(query).toArray();
+    try {
+        if (roll === "student") {
+            const students = users.filter(user => user.roll === "student");
+            console.log("student", students);
+            res.send(students);
+            return;
+        }
+        else if (roll === "teacher") {
+            const teacher = users.filter(user => user.roll === "teacher");
+            res.send(teacher);
+            return;
+        }
+        else { res.send("user not found"); }
+    } catch (error) { res.send(error.message); }
+});
+
 
 // student report posted 
 app.post("/report", async (req, res) => {
@@ -71,7 +114,6 @@ app.get("/reports", async (req, res) => {
     const query = {};
     const reports = await studentsReportCollection.find(query).toArray();
     res.send(reports);
-
 });
 
 app.put("/resolved/:id", async (req, res) => {
@@ -86,6 +128,10 @@ app.put("/resolved/:id", async (req, res) => {
     const result = await studentsReportCollection.updateOne(filter, updatedDoc, options);
     res.send(result);
 });
+
+
+
+
 
 // get according to roll
 app.get("/user", async (req, res) => {
@@ -177,7 +223,7 @@ app.get("/resultdata", async (req, res) => {
 
 app.get("/resultdata/:id", async (req, res) => {
     const email = req.query.email;
-    console.log('result data email', email);
+    // console.log('result data email', email);
     const id = req.params.id;
     const query = { student_email: email };
     const student = await studentResult.findOne(query);
@@ -185,7 +231,7 @@ app.get("/resultdata/:id", async (req, res) => {
         const semesterResult = student?.semester_results?.find(
             (st) => st.semesterId == id
         );
-        console.log("studentresult data ", semesterResult);
+        // console.log("studentresult data ", semesterResult);
         res.send(semesterResult);
     }
 });
