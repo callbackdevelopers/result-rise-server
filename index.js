@@ -50,13 +50,14 @@ app.put("/users/:id", async (req, res) => {
     const id = req.params.id;
     const filter = { _id: ObjectId(id) };
 
-    const user = req.body;
+    const updateProfile = req.body;
     const options = { upsert: true };
     const updatedUser = {
         $set: {
-            name: user.name,
-            phone: user.phone,
-            address: user.address
+            name: updateProfile.name,
+            phone: updateProfile.phone,
+            address: updateProfile.address,
+            verification: false,
         }
     }
     // console.log("UP:", updatedUser)
