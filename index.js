@@ -6,19 +6,17 @@ const port = process.env.PORT || 3100;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@result-rise-db.g6bidmr.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://result-rise-db-user:8atFxiIp8yCahDc6@result-rise-db.g6bidmr.mongodb.net/?retryWrites=true&w=majority`;
 // console.log(uri);
 
 // middleware
 app.use(cors());
 app.use(express.json());
-
 const client = new MongoClient(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     serverApi: ServerApiVersion.v1,
 });
-
 const mongodb = () => {
     try {
         client.connect()
@@ -29,25 +27,9 @@ const mongodb = () => {
 mongodb()
 //collections
 const db = client.db("result-rise");
-const studentsCollection = db.collection("students");
-const teachersCollection = db.collection("teachers");
 const usersCollection = db.collection("users");
-
-//get all users
-app.get("/users", async (req, res) => {
-    const sort = { _id: -1 };
-    const query = {};
-    const users = await usersCollection.find(query).sort(sort).toArray();
-    res.send(users);
-});
-//get a user 
-app.get("/users/:email", async (req, res) => {
-    const { email } = req.params;
-    console.log(email);
-    const query = { email: email };
-    const user = await usersCollection.findOne(query)
-    res.send(user);
-});
+const studentResult = db.collection("studentResultData")
+const studentsReportCollection = db.collection("studentsReport")
 
 // post a user
 app.post("/users", async (req, res) => {
@@ -56,108 +38,175 @@ app.post("/users", async (req, res) => {
     const result = await usersCollection.insertOne(user);
     res.send(result);
 });
-
-
-// get all students
-app.get("/students", async (req, res) => {
-    const sort = { _id: -1 };
-    const students = await studentsCollection.find().sort(sort).toArray();
-    res.send(students);
-});
-
-//get a student
-app.get("/students/:id", async (req, res) => {
+// user a delete 
+app.delete("/users/:id", async (req, res) => {
     const id = req.params.id;
     const query = { _id: ObjectId(id) };
-    const student = await studentsCollection.findOne(query);
-    res.send(student);
-});
-
-// add a student
-app.post("/students", async (req, res) => {
-    const student_name = req.body.student_name;
-    const student_id = req.body.student_id;
-    const cgpa = req.body.cgpa;
-    const photo = req.body.photo;
-    const student = { student_name, student_id, cgpa, photo };
-    const result = await studentsCollection.insertOne(student);
+    const result = await usersCollection.deleteOne(query);
     res.send(result);
 });
-
-// update a student
-app.patch("/students/:id", async (req, res) => {
+// update user
+app.put("/users/:id", async (req, res) => {
     const id = req.params.id;
-    const query = { _id: ObjectId(id) };
-    const newData = { $set: req.body };
+    const updateProfile = req.body;
+    const filter = { _id: ObjectId(id) };
     const options = { upsert: true };
-    const result = await studentsCollection.updateOne(
-        query,
-        newData,
-        options
-    );
-    res.send(result);
+    const updatedUser = {
+        $set: {
+            name: updateProfile.name,
+            phone: updateProfile.phone,
+            address: updateProfile.address,
+            verification: false,
+        }
+    }
+    // console.log("UP:", updatedUser)
+    const result = await usersCollection.updateOne(filter, updatedUser, options);
+    res.send(result)
+    // console.log("UP:", updatedUser)
 });
-
-// delete a student
-app.delete("/students/:id", async (req, res) => {
-    const id = req.params.id;
+//get a user by email
+app.get("/users/:email", async (req, res) => {
+    const { email } = req.params;
+    const query = { email: email };
+    try {
+        const user = await usersCollection.find(query).toArray()
+        res.send(user);
+    } catch (error) { res.send(error.message); }
+});
+//get a user by id 
+app.get("/users/:id", async (req, res) => {
+    const { id } = req.params;
     const query = { _id: ObjectId(id) };
-    const result = await studentsCollection.deleteOne(query);
-    res.send(result);
+    const user = await usersCollection.findOne(query)
+    res.send(user);
 });
-
-// get all teachers
-app.get("/teachers", async (req, res) => {
-    const sort = { _id: -1 };
-    const teachers = await teachersCollection
-        .find()
-        .sort(sort)
-        .toArray();
-    res.send(teachers);
-});
-
-//get a teacher
-app.get("/teachers/:id", async (req, res) => {
+// Verification student and teacher
+app.patch("/users/:id", async (req, res) => {
     const id = req.params.id;
-    const query = { _id: ObjectId(id) };
-    const teacher = await teachersCollection.findOne(query);
-    res.send(teacher);
-});
+    const filter = { _id: ObjectId(id) };
 
-// add a teacher
-app.post("/teachers", async (req, res) => {
-    const teacher_name = req.body.teacher_name;
-    const teacher_id = req.body.teacher_id;
-    const designation = req.body.designation;
-    const photo = req.body.photo;
-    const teacher = { teacher_name, teacher_id, photo, designation };
-    const result = await teachersCollection.insertOne(teacher);
+    // const user = req.body;
+    const options = { upsert: true };
+    const updatedUser = {
+        $set: {
+            verification: true,
+        }
+    }
+    // console.log("UP:", updatedUser)
+    const result = await usersCollection.updateOne(filter, updatedUser, options);
+    res.send(result)
+    // console.log("UP:", updatedUser)
+});
+//get all pending  form user
+app.get("/pending/:roll", async (req, res) => {
+    const { roll } = req.params;
+    const query = { verification: false };
+    const users = await usersCollection.find(query).toArray();
+    try {
+        if (roll === "student") {
+            const students = users.filter(user => user.roll === "student");
+            // console.log("student", students);
+            res.send(students);
+            return;
+        }
+        else if (roll === "teacher") {
+            const teacher = users.filter(user => user.roll === "teacher");
+            res.send(teacher);
+            return;
+        }
+        else { res.send("user not found"); }
+    } catch (error) { res.send(error.message); }
+});
+// get all verified user
+app.get("/verified/:roll", async (req, res) => {
+    const { roll } = req.params;
+    const query = { verification: true };
+    const users = await usersCollection.find(query).toArray();
+    try {
+        if (roll === "student") {
+            const students = users.filter(user => user.roll === "student");
+            // console.log("student", students);
+            res.send(students);
+            return;
+        }
+        else if (roll === "teacher") {
+            const teacher = users.filter(user => user.roll === "teacher");
+            res.send(teacher);
+            return;
+        }
+        else { res.send("user not found"); }
+    } catch (error) { res.send(error.message); }
+});
+// student report posted 
+app.post("/report", async (req, res) => {
+    const report = req.body;
+    const result = await studentsReportCollection.insertOne(report);
     res.send(result);
 });
+// get all student reports
+app.get("/reports/:type", async (req, res) => {
+    const { type } = req.params;
+    let query = {};
+    try {
+        if (type === "all") {
+            const reports = await studentsReportCollection.find(query).toArray();
+            res.send(reports);
+        }
+        else if (type === "pending") {
+            query = { resolved: false };
+            const reports = await studentsReportCollection.find(query).toArray();
+            res.send(reports);
+        }
+        else if (type === "resolved") {
+            query = { resolved: true };
+            const reports = await studentsReportCollection.find(query).toArray();
+            res.send(reports);
+        }
+        else { res.send("user not found"); }
+    } catch (error) {
+        res.send(error.message);
+    }
+});
 
-// update a teacher
-app.patch("/teachers/:id", async (req, res) => {
+app.put("/resolved/:id", async (req, res) => {
     const id = req.params.id;
-    const query = { _id: ObjectId(id) };
-    const newData = { $set: req.body };
-    const result = await teachersCollection.updateOne(query, newData);
+    const filter = { _id: ObjectId(id) };
+    const options = { upsert: true };
+    const updatedDoc = {
+        $set: {
+            resolved: true,
+        }
+    }
+    const result = await studentsReportCollection.updateOne(filter, updatedDoc, options);
+    res.send(result);
+});
+//result data
+app.get("/resultdata", async (req, res) => {
+    const query = {};
+    const resultData = await studentResult.find(query);
+    const result = await resultData.toArray()
+    // console.log(result);
     res.send(result);
 });
 
-//delete a teacher
-app.delete("/teachers/:id", async (req, res) => {
+app.get("/resultdata/:id", async (req, res) => {
+    const email = req.query.email;
+    // console.log('result data email', email);
     const id = req.params.id;
-    const query = { _id: ObjectId(id) };
-    const result = await teachersCollection.deleteOne(query);
-    res.send(result);
+    const query = { student_email: email };
+    const student = await studentResult.findOne(query);
+    if (student) {
+        const semesterResult = student?.semester_results?.find(
+            (st) => st.semesterId == id
+        );
+        // console.log("studentresult data ", semesterResult);
+        res.send(semesterResult);
+    }
 });
-
-
 
 app.get("/", (req, res) => {
     res.send("ResultRise Server is running");
 });
-
 app.listen(port, () => {
     console.log("Listening to port", port);
 });
