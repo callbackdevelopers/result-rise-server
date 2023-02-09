@@ -201,7 +201,9 @@ app.put("/resolved/:id", async (req, res) => {
 });
 //result data
 app.get("/resultdata", async (req, res) => {
-    const query = {};
+    const email = req.query.email;
+    // console.log('result data email', email);
+    const query = { student_email: email };
     const resultData = await studentResult.find(query);
     const result = await resultData.toArray()
     // console.log(result);
@@ -214,6 +216,7 @@ app.get("/resultdata/:id", async (req, res) => {
     const id = req.params.id;
     const query = { student_email: email };
     const student = await studentResult.findOne(query);
+    // console.log("student data ", student);
     if (student) {
         const semesterResult = student?.semester_results?.find(
             (st) => st.semesterId == id
