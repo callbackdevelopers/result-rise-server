@@ -137,15 +137,27 @@ app.get("/verified/:roll", async (req, res) => {
         else { res.send("user not found"); }
     } catch (error) { res.send(error.message); }
 });
+// get my reports 
+app.get("/myreports/:email", async (req, res) => {
+    const { email } = req.params;
+    const query = { email };
+    try {
+        const user = await usersCollection.findOne(query)
+        const reports = await studentsReportCollection.find({ reporterEmail: user.email }).toArray();
+        res.send(reports);
+    } catch (error) { res.send(error.message); }
+});
 // student report posted 
 app.post("/report", async (req, res) => {
-    const report = req.body;
-    const result = await studentsReportCollection.insertOne(report);
+    const reportData = req.body;
+    // console.log(reportData);
+    const result = await studentsReportCollection.insertOne(reportData);
     res.send(result);
 });
 // get all student reports
 app.get("/reports/:type", async (req, res) => {
     const { type } = req.params;
+    // console.log(type);
     let query = {};
     try {
         if (type === "all") {
@@ -166,6 +178,13 @@ app.get("/reports/:type", async (req, res) => {
     } catch (error) {
         res.send(error.message);
     }
+});
+// delete a reportData :
+app.delete("/reports/:id", async (req, res) => {
+    const { id } = req.params;
+    const query = { _id: ObjectId(id) };
+    const result = await studentsReportCollection.deleteOne(query);
+    res.send(result);
 });
 
 app.put("/resolved/:id", async (req, res) => {
