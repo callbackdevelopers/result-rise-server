@@ -199,6 +199,26 @@ app.put("/resolved/:id", async (req, res) => {
     const result = await studentsReportCollection.updateOne(filter, updatedDoc, options);
     res.send(result);
 });
+// get result form outside Login
+app.post('/students/outsied', async (req, res) => {
+    const { id, registration, department, semister } = req.body;
+    console.log('details', id, registration, department, semister);
+    const query = { student_id: id, registration_number: registration, department };
+    try {
+        const student = await studentResult.findOne(query);
+        if (!student) {
+            return res.status(404).send('student not found');
+        }
+        const semesterData = student?.semester_results?.find(s => s.semester == semister);
+        if (!semesterData) {
+            return res.status(404).send('Semester not found');
+        }
+        res.send(semesterData);
+    } catch (error) {
+        res.send(error.message);
+    }
+});
+
 //result data
 app.get("/resultdata", async (req, res) => {
     const email = req.query.email;
