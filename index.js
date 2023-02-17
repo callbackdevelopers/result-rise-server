@@ -30,6 +30,7 @@ const db = client.db("result-rise");
 const usersCollection = db.collection("users");
 const studentResult = db.collection("studentResultData")
 const studentsReportCollection = db.collection("studentsReport")
+const NoticeCollection = db.collection('notices')
 
 // post a user
 app.post("/users", async (req, res) => {
@@ -244,6 +245,23 @@ app.get("/resultdata/:id", async (req, res) => {
         // console.log("studentresult data ", semesterResult);
         res.send(semesterResult);
     }
+});
+// post a notice :
+app.post("/notice", async (req, res) => {
+    const formData = req.body;
+    try {
+        const result = await NoticeCollection.insertOne(formData);
+        res.send(result);
+    } catch (error) { res.send(error.message); }
+
+});
+// get all notice :
+app.get("/notice", async (req, res) => {
+    const query = {};
+    const noticeData = await NoticeCollection.find(query);
+    const notice = await noticeData.toArray();
+    console.log('notice data', notice);
+    res.send(notice);
 });
 
 app.get("/", (req, res) => {
